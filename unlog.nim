@@ -1,12 +1,14 @@
 import os
 import parseopt
- 
+
+var ver: string = "Version: v0.01" 
 var  logfile: string = "unlog.log"
 var loglevel: string = "INFO"
 var msg: string = ""
 var paramCount = paramCount()
-# initial code found at: http://rosettacode.org/wiki/Parse_command-line_arguments#Nim
 
+# initial code found at: http://rosettacode.org/wiki/Parse_command-line_arguments#Nim
+#
 #[
   -h, --help: print help
   --log: log filename
@@ -19,6 +21,10 @@ var paramCount = paramCount()
    Usage: unlog --log="test.log" --loglevel=[info | debug | warn |  fatal] [ -n | -c |  -m | -v ] --msg="this is a test"
    
 ]#
+
+
+proc version =  echo ver
+
 proc checkargs =
         if paramCount == 0:
           echo "Usage: unlog --log=\"<filename.log>\" --loglevel=[info | debug | warn | fatal] [ -n | -c |  -m ] [  [-v | --version ] --msg=\"Log message.\""  
@@ -27,7 +33,6 @@ proc checkargs =
           loglevel = "WARN"
           msg = "Log msg unassigned"
   
-proc version =  echo "v0.01"
 proc help = echo "help"
 
 proc init =
