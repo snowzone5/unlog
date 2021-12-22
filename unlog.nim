@@ -6,9 +6,8 @@ var  logfile: string = "unlog.log"
 var loglevel: string = "INFO"
 var msg: string = ""
 var paramCount = paramCount()
-
 # initial code found at: http://rosettacode.org/wiki/Parse_command-line_arguments#Nim
-#
+
 #[
   -h, --help: print help
   --log: log filename
@@ -24,7 +23,7 @@ var paramCount = paramCount()
 
 
 proc version =  echo ver
-
+proc help = echo "help"
 proc checkargs =
         if paramCount == 0:
           echo "Usage: unlog --log=\"<filename.log>\" --loglevel=[info | debug | warn | fatal] [ -n | -c |  -m ] [  [-v | --version ] --msg=\"Log message.\""  
@@ -33,15 +32,14 @@ proc checkargs =
           loglevel = "WARN"
           msg = "Log msg unassigned"
   
-proc help = echo "help"
 
 proc init =
   #  app name
  # echo "app name: ", getAppFilename().extractFilename()
  # Get parameter count
 #  echo "# parameters: ", paramCount()
-  for ii in 1 .. paramCount():    # 1st param is at index 1
-    echo "param ", ii, ": ", paramStr(ii)
+  for p in 1 .. paramCount():    # 1st param is at index 1
+    echo "param ", p, ": ", paramStr(p)
  
   echo ""
  
