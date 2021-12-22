@@ -2,10 +2,13 @@ import os
 import parseopt
  
 var  logfile: string = "unlog.log"
-var loglevel: string = "info"
+var loglevel: string = "INFO"
+var msg: string = ""
+var paramCount = paramCount()
 # initial code found at: http://rosettacode.org/wiki/Parse_command-line_arguments#Nim
 
 #[
+  -h, --help: print help
   --log: log filename
   --loglevel [info | debug | warn |  fatal]
    -n: standard Nim logging
@@ -16,13 +19,22 @@ var loglevel: string = "info"
    Usage: unlog --log="test.log" --loglevel=[info | debug | warn |  fatal] [ -n | -c |  -m | -v ] --msg="this is a test"
    
 ]#
- 
+proc checkargs =
+        if paramCount == 0:
+          echo "Usage: unlog --log=\"<filename.log>\" --loglevel=[info | debug | warn | fatal] [ -n | -c |  -m ] [  [-v | --version ] --msg=\"Log message.\""  
 
-proc main =
+        if msg == "":  
+          loglevel = "WARN"
+          msg = "Log msg unassigned"
+  
+proc version =  echo "v0.01"
+proc help = echo "help"
+
+proc init =
   #  app name
  # echo "app name: ", getAppFilename().extractFilename()
  # Get parameter count
-  echo "# parameters: ", paramCount()
+#  echo "# parameters: ", paramCount()
   for ii in 1 .. paramCount():    # 1st param is at index 1
     echo "param ", ii, ": ", paramStr(ii)
  
@@ -41,7 +53,10 @@ proc main =
       case key
       of  "log": logfile=value
       of  "loglevel": loglevel=value
-      of  "n", "c", "m", "v","msg":
+      of  "msg": msg=value
+      of "h", "help": help()
+      of "v","version": version()
+      of  "n", "c", "m":
 
         echo "Got a \"", key, "\" option with value: \"", value, "\""
       else:
@@ -50,6 +65,9 @@ proc main =
     of cmdEnd:
       discard
  
-echo logfile," ", loglevel
-main()
-echo logfile," ", loglevel
+echo "\nBefore: ", logfile," ", loglevel, " ", msg, " \n"
+
+init()
+checkargs()
+
+echo "\nAfter: ",logfile," ", loglevel, " ", msg, "\n"
