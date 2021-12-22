@@ -1,6 +1,8 @@
 import os
 import parseopt
-
+ 
+var  logfile: string = "unlog.log"
+var loglevel: string = "info"
 # initial code found at: http://rosettacode.org/wiki/Parse_command-line_arguments#Nim
 
 #[
@@ -15,6 +17,7 @@ import parseopt
    
 ]#
  
+
 proc main =
   #  app name
  # echo "app name: ", getAppFilename().extractFilename()
@@ -36,7 +39,10 @@ proc main =
  
     of cmdLongOption, cmdShortOption:
       case key
-      of  "log","loglevel","n", "c", "m", "v","msg":
+      of  "log": logfile=value
+      of  "loglevel": loglevel=value
+      of  "n", "c", "m", "v","msg":
+
         echo "Got a \"", key, "\" option with value: \"", value, "\""
       else:
         echo "Unknown option: ", key
@@ -44,5 +50,6 @@ proc main =
     of cmdEnd:
       discard
  
- 
+echo logfile," ", loglevel
 main()
+echo logfile," ", loglevel
