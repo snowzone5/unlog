@@ -1,3 +1,4 @@
+# nim c -d:chronicles_sinks=textblocks[stdout,file] -d:chronicles_indent=4 unlog.nim
 import os
 import parseopt
 import chronicles
@@ -17,32 +18,29 @@ proc version =  echo ver
 proc help = echo "help"
 proc checkargs =
         if paramCount == 0:
-          echo "Usage: unlog --log=\"<filename.log>\" --loglevel=[info | debug | warn | fatal] [ -ln | --linenumber ] [ -n | -c |  -m ] [  [-v | --version ] --msg=\"Log message.\""  
+          echo "Usage: unlog --log=\"<filename.log>\" --loglevel=[info | debug | warn | error | fatal] [ -ln | --linenumber ] [ -n | -c |  -m ] [  [-v | --version ] --msg=\"Log message.\" [ -c=extraArgs ...]"  
 
         if msg == "":  
           loglevel = "WARN"
-          msg = "Log msg unassigned"
+          msg = "No log message."
 
 proc nimlogger =
         var consoleLog = newConsoleLogger()          
         addHandler(consoleLog)
-
   
-# initial code found at: http://rosettacode.org/wiki/Parse_command-line_arguments#Nim
 proc init =
-  for p in 1 .. paramCount():    # 1st param is at index 1
-    echo "param ", p, ": ", paramStr(p)
- 
+  ##for p in 1 .. paramCount:
+  ##  echo "param ", p, ": ", paramStr(p)
+
   echo ""
  
-  # Using parseopt module to extract short and long options and argumecd nts
-  var argCtr : int
+  var argCounter : int
  
   for kind, key, value in getOpt():
     case kind
     of cmdArgument:
-      echo "Got arg ", argCtr, ": \"", key, "\""
-      argCtr.inc
+      #echo "Got arg ", argCounter, ": \"", key, "\""
+      argCounter.inc
  
     of cmdLongOption, cmdShortOption:
       case key
@@ -68,19 +66,24 @@ init()
 checkargs()
 nimlogger()
 
-if extraArgs != "":
+if extraArgs != "":  # -c is used one  or more times for Chronicles
   case loglevel
   of "info":  info  "", lineNumber,  msg, extraArgs
+  of "notice":  notice  "", lineNumber,  msg, extraArgs
   of "debug":  debug  "", lineNumber, msg, extraArgs
   of "warn":  warn  "", lineNumber, msg, extraArgs
   of "error":  error  "", lineNumber, msg, extraArgs
   of "fatal":  fatal  "", lineNumber, msg, extraArgs
 
+# TODO: add date timestamp
+
 if (usenimlogger == true):
-   case loglevel:
-   of "info":  log(lvlInfo, "ln:",lineNumber, " -  ", msg )
-   of "notice":  log(lvlNotice, "ln:",lineNumber, "  - ", msg )
-   of "debug":  log(lvlDebug, "ln:",lineNumber, " - ", msg )
-   of "warn":  log(lvlWarn, "ln:",lineNumber, " - ", msg )
-   of "error":  log(lvlError, "ln:",lineNumber, " - ", msg )
-   of "fatal":  log(lvlFatal, "ln:",lineNumber, " - ", msg )
+  case loglevel:
+  of "info":  log(lvlInfo, "ln:",lineNumber, "-  ", msg )
+  of "notice":  log(lvlNotice, "ln:",lineNumber, " - ", msg )
+  of "debug":  log(lvlDebug, "ln:",lineNumber, "- ", msg )
+  of "warn":  log(lvlWarn, "ln:",lineNumber, "- ", msg )
+  of "error":  log(lvlError, "ln:",lineNumber, "- ", msg )
+  of "fatal":  log(lvlFatal, "ln:",lineNumber, "- ", msg )
+
+ # TODO: add simple (for quick) -s option  (defaults to unlog.log, debug, no ln, and just msg)
