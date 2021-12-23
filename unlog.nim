@@ -1,23 +1,33 @@
 import os
 import parseopt
+import chronicles
+#import strutils
+import std/logging
 
 var ver: string = "Version: v0.01" 
 var  logfile: string = "unlog.log"
 var loglevel: string = "INFO"
+var lineNumber: string = "0"
 var msg: string = ""
 var paramCount = paramCount()
+var extraArgs:  string = ""
+var usenimlogger: bool = false
+
 # initial code found at: http://rosettacode.org/wiki/Parse_command-line_arguments#Nim
 
 #[
   -h, --help: print help
   --log: log filename
   --loglevel [info | debug | warn |  fatal]
+  -ln, --linenumber linenumber
    -n: standard Nim logging
    -c: chronicles textblock logging
    -m: morelogging style
    --msg: "log msg"
 
    Usage: unlog --log="test.log" --loglevel=[info | debug | warn |  fatal] [ -n | -c |  -m | -v ] --msg="this is a test"
+   compile with: nim c -d:chronicles_sinks=textblocks[stdout,file] -d:chronicles_line_numbers -d:chronicles_indent=4 unlog.nim
+   ./unlog --log=test.log --loglevel=debug --msg="This is a test" -c=x=1 -c=y=2
    
 ]#
 
@@ -26,11 +36,16 @@ proc version =  echo ver
 proc help = echo "help"
 proc checkargs =
         if paramCount == 0:
-          echo "Usage: unlog --log=\"<filename.log>\" --loglevel=[info | debug | warn | fatal] [ -n | -c |  -m ] [  [-v | --version ] --msg=\"Log message.\""  
+          echo "Usage: unlog --log=\"<filename.log>\" --loglevel=[info | debug | warn | fatal] [ -ln | --linenumber ] [ -n | -c |  -m ] [  [-v | --version ] --msg=\"Log message.\""  
 
         if msg == "":  
           loglevel = "WARN"
           msg = "Log msg unassigned"
+
+proc nimlogger =
+        var consoleLog = newConsoleLogger()          
+        addHandler(consoleLog)
+
   
 
 proc init =
@@ -56,10 +71,14 @@ proc init =
       case key
       of  "log": logfile=value
       of  "loglevel": loglevel=value
+      of "ln": lineNumber=value
+      of "linenumber": lineNumber=value
       of  "msg": msg=value
       of "h", "help": help()
       of "v","version": version()
-      of  "n", "c", "m":
+      of "c":  extraArgs.add(value & " ")
+      of  "n": usenimlogger = true
+      of   "m":
 
         echo "Got a \"", key, "\" option with value: \"", value, "\""
       else:
@@ -67,10 +86,24 @@ proc init =
  
     of cmdEnd:
       discard
- 
-echo "\nBefore: ", logfile," ", loglevel, " ", msg, " \n"
 
 init()
 checkargs()
+nimlogger()
 
-echo "\nAfter: ",logfile," ", loglevel, " ", msg, "\n"
+if extraArgs != "":
+  case loglevel
+  of "info":  info  "", lineNumber,  msg, extraArgs
+  of "debug":  debug  "", lineNumber, msg, extraArgs
+  of "warn":  warn  "", lineNumber, msg, extraArgs
+  of "error":  error  "", lineNumber, msg, extraArgs
+  of "fatal":  fatal  "", lineNumber, msg, extraArgs
+
+if (usenimlogger == true):
+   case loglevel:
+   of "info":  log(lvlInfo, "ln:",lineNumber, " -  ", msg )
+   of "notice":  log(lvlNotice, "ln:",lineNumber, "  - ", msg )
+   of "debug":  log(lvlDebug, "ln:",lineNumber, " - ", msg )
+   of "warn":  log(lvlWarn, "ln:",lineNumber, " - ", msg )
+   of "error":  log(lvlError, "ln:",lineNumber, " - ", msg )
+   of "fatal":  log(lvlFatal, "ln:",lineNumber, " - ", msg )
