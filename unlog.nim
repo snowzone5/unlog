@@ -1,10 +1,9 @@
 import os
 import parseopt
 import chronicles
-#import strutils
 import std/logging
 
-var ver: string = "Version: v0.01" 
+var ver: string = "Version: v0.02" 
 var  logfile: string = "unlog.log"
 var loglevel: string = "INFO"
 var lineNumber: string = "0"
@@ -12,24 +11,6 @@ var msg: string = ""
 var paramCount = paramCount()
 var extraArgs:  string = ""
 var usenimlogger: bool = false
-
-# initial code found at: http://rosettacode.org/wiki/Parse_command-line_arguments#Nim
-
-#[
-  -h, --help: print help
-  --log: log filename
-  --loglevel [info | debug | warn |  fatal]
-  -ln, --linenumber linenumber
-   -n: standard Nim logging
-   -c: chronicles textblock logging
-   -m: morelogging style
-   --msg: "log msg"
-
-   Usage: unlog --log="test.log" --loglevel=[info | debug | warn |  fatal] [ -n | -c |  -m | -v ] --msg="this is a test"
-   compile with: nim c -d:chronicles_sinks=textblocks[stdout,file] -d:chronicles_line_numbers -d:chronicles_indent=4 unlog.nim
-   ./unlog --log=test.log --loglevel=debug --msg="This is a test" -c=x=1 -c=y=2
-   
-]#
 
 
 proc version =  echo ver
@@ -47,12 +28,8 @@ proc nimlogger =
         addHandler(consoleLog)
 
   
-
+# initial code found at: http://rosettacode.org/wiki/Parse_command-line_arguments#Nim
 proc init =
-  #  app name
- # echo "app name: ", getAppFilename().extractFilename()
- # Get parameter count
-#  echo "# parameters: ", paramCount()
   for p in 1 .. paramCount():    # 1st param is at index 1
     echo "param ", p, ": ", paramStr(p)
  
