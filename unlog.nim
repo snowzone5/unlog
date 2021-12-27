@@ -1,4 +1,4 @@
-# nim c -d:chronicles_sinks=textblocks[stdout,file] -d:chronicles_indent=4 unlog.nim
+# nim c -d:chronicles_sinks=textblocks[stdout,file] -d:chronicles_indent=4 -d:disable_thread_id unlog.nim
 import os
 import parseopt
 import chronicles
@@ -67,6 +67,9 @@ checkargs()
 nimlogger()
 
 if extraArgs != "":  # -c is used one  or more times for Chronicles
+  let success = defaultChroniclesStream.output.open(logfile, fmAppend)
+   
+
   case loglevel
   of "info":  info  "", lineNumber,  msg, extraArgs
   of "notice":  notice  "", lineNumber,  msg, extraArgs
