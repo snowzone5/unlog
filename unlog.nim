@@ -1,4 +1,4 @@
-# nim c -d:chronicles_sinks=textblocks[stdout,file] -d:chronicles_indent=4 -d:disable_thread_id unlog.nim
+# nim c -d:chronicles_sinks=textblocks[stdout,file] -d:chronicles_indent=4 -d:chronicles_disable_thread_id unlog.nim
 import os
 import parseopt
 import chronicles
@@ -67,7 +67,7 @@ checkargs()
 nimlogger()
 
 if extraArgs != "":  # -c is used one  or more times for Chronicles
-  let success = defaultChroniclesStream.output.open(logfile, fmAppend)
+  var success = defaultChroniclesStream.output.open(logfile, fmAppend)
    
 
   case loglevel
@@ -78,7 +78,8 @@ if extraArgs != "":  # -c is used one  or more times for Chronicles
   of "error":  error  "", lineNumber, msg, extraArgs
   of "fatal":  fatal  "", lineNumber, msg, extraArgs
 
-# TODO: add date timestamp
+# TODO: add date timestamp to dts
+# TODO: -n defaults rotate log = 1000 --nr to set rotate limit
 
 if (usenimlogger == true):
   case loglevel:
