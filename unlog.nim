@@ -4,7 +4,7 @@ import parseopt
 import chronicles
 import std/logging
 
-var ver: string = "Version: v0.02" 
+var ver: string = "Version: v0.03" 
 var  logfile: string = "unlog.log"
 var loglevel: string = "INFO"
 var lineNumber: string = "0"
@@ -91,5 +91,8 @@ if (usenimlogger == true):
   of "warn":  log(lvlWarn, "ln:",lineNumber, "- ", msg )
   of "error":  log(lvlError, "ln:",lineNumber, "- ", msg )
   of "fatal":  log(lvlFatal, "ln:",lineNumber, "- ", msg )
+
+# TODO: add nim-morelogging
+# TODO: add max/squick logging :)
 
  # TODO: add simple (for quick) -s option  (defaults to unlog.log, debug, no ln, and just msg)
