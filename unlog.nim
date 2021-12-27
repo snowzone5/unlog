@@ -66,6 +66,8 @@ init()
 checkargs()
 nimlogger()
 
+# TODO: use try/except for success var
+
 if extraArgs != "":  # -c is used one  or more times for Chronicles
   var success = defaultChroniclesStream.output.open(logfile, fmAppend)
    
