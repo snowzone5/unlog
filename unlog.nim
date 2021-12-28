@@ -30,7 +30,6 @@ proc nimlogger =
 
 proc checkargs =
         var argCounter : int
-        var missingp: string
 
         if paramCount == 0:
           echo "Usage: unlog --log=\"<filename.log>\" --loglevel=[info | debug | warn | error | fatal] [ -ln | --linenumber ] [ -n | -c |  -m ] [  [-v | --version ] --msg=\"Log message.\" [ -c=extraArgs ...]"  
@@ -60,7 +59,7 @@ proc checkargs =
             of  "n": usenimlogger = true
             of   "m": usemorelogger = true
 
-                #echo "Got a \"", key, "\" option with value: \"", value, "\""
+            echo "Got a \"", key, "\" option with value: \"", value, "\""
             else:
               echo "Unknown option: ", key
         
