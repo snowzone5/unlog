@@ -4,7 +4,7 @@ import parseopt
 import chronicles
 import std/logging
 
-var ver: string = "Version: v0.03" 
+var ver: string = "Unlog v0.03" 
 var  logfile: string = "unlog.log"
 var loglevel: string = "INFO"
 var lineNumber: string = "0"
@@ -15,62 +15,63 @@ var usenimlogger: bool = false
 
 
 proc version =  echo ver
-proc help = echo "help"
-proc checkargs =
-        if paramCount == 0:
-          echo "Usage: unlog --log=\"<filename.log>\" --loglevel=[info | debug | warn | error | fatal] [ -ln | --linenumber ] [ -n | -c |  -m ] [  [-v | --version ] --msg=\"Log message.\" [ -c=extraArgs ...]"  
 
-        if msg == "":  
-          loglevel = "WARN"
-          msg = "No log message."
+proc help = echo "help"
 
 proc nimlogger =
-        var consoleLog = newConsoleLogger()          
+        var consoleLog = newConsoleLogger(fmtStr="[$date $time] - $levelname: ")          
         addHandler(consoleLog)
-  
-proc init =
-  ##for p in 1 .. paramCount:
-  ##  echo "param ", p, ": ", paramStr(p)
 
-  echo ""
- 
-  var argCounter : int
- 
-  for kind, key, value in getOpt():
-    case kind
-    of cmdArgument:
-      #echo "Got arg ", argCounter, ": \"", key, "\""
-      argCounter.inc
- 
-    of cmdLongOption, cmdShortOption:
-      case key
-      of  "log": logfile=value
-      of  "loglevel": loglevel=value
-      of "ln": lineNumber=value
-      of "linenumber": lineNumber=value
-      of  "msg": msg=value
-      of "h", "help": help()
-      of "v","version": version()
-      of "c":  extraArgs.add(value & " ")
-      of  "n": usenimlogger = true
-      of   "m":
+proc checkargs =
+        var argCounter : int
 
-        echo "Got a \"", key, "\" option with value: \"", value, "\""
-      else:
-        echo "Unknown option: ", key
- 
-    of cmdEnd:
-      discard
+        if paramCount == 0:
+          echo "Usage: unlog --log=\"<filename.log>\" --loglevel=[info | debug | warn | error | fatal] [ -ln | --linenumber ] [ -n | -c |  -m ] [  [-v | --version ] --msg=\"Log message.\" [ -c=extraArgs ...]"  
+          quit(QuitFailure)
 
-init()
-checkargs()
+        ##for p in 1 .. paramCount:
+        ##  echo "param ", p, ": ", paramStr(p)
+        echo ""
+ 
+        for kind, key, value in getOpt():
+          case kind
+          of cmdArgument:
+            #echo "Got arg ", argCounter, ": \"", key, "\""
+            argCounter.inc
+        
+          of cmdLongOption, cmdShortOption:
+            case key
+            of  "log": logfile=value
+            of  "loglevel": loglevel=value
+            of "ln": lineNumber=value
+            of "linenumber": lineNumber=value
+            of  "msg": msg=value
+            of "h", "help": help()
+            of "v","version": version()
+            of "c":  extraArgs.add(value & " ")
+            of  "n": usenimlogger = true
+            of   "m":
+
+              echo "Got a \"", key, "\" option with value: \"", value, "\""
+            else:
+              echo "Unknown option: ", key
+        
+          of cmdEnd:
+            discard
+        if msg == "":  
+          loglevel = "WARN"
+          msg = "No log message defined."
+          warn  "", lineNumber, msg, extraArgs
+          log(lvlWarn, "ln:",lineNumber, " -  ", msg )
+          quit(QuitFailure)
+
 nimlogger()
+checkargs() 
 
 # TODO: use try/except for success var
 
 if extraArgs != "":  # -c is used one  or more times for Chronicles
   var success = defaultChroniclesStream.output.open(logfile, fmAppend)
-   
 
   case loglevel
   of "info":  info  "", lineNumber,  msg, extraArgs
@@ -80,7 +81,6 @@ if extraArgs != "":  # -c is used one  or more times for Chronicles
   of "error":  error  "", lineNumber, msg, extraArgs
   of "fatal":  fatal  "", lineNumber, msg, extraArgs
 
-# TODO: add date timestamp to dts
 # TODO: -n defaults rotate log = 1000 --nr to set rotate limit
 
 if (usenimlogger == true):
@@ -93,6 +93,6 @@ if (usenimlogger == true):
   of "fatal":  log(lvlFatal, "ln:",lineNumber, "- ", msg )
 
 # TODO: add nim-morelogging
-# TODO: add max/squick logging :)
+# TODO: add max/squish logging :)
 
  # TODO: add simple (for quick) -s option  (defaults to unlog.log, debug, no ln, and just msg)
