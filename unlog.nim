@@ -18,6 +18,9 @@ proc version =  echo ver
 
 proc help = echo "help"
 
+# TODO: add file logging to nimlogger
+# TODO: add file rotation option to nimlogger
+
 proc nimlogger =
         var consoleLog = newConsoleLogger(fmtStr="[$date $time] - $levelname: ")          
         addHandler(consoleLog)
