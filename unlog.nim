@@ -6,7 +6,7 @@ import std/logging
 import strutils
 
 var ver: string = "Unlog v0.03" 
-var debug: bool =  true
+var debug: bool =  false
 var  logfile: string = "unlog.log"
 var loglevel: string = "INFO"
 var lineNumber: string = "0"
@@ -57,9 +57,9 @@ proc checkargs =
             of "v","version": version()
             of "c":  extraArgs.add(value & " ")
             of  "n": usenimlogger = true
-            of   "m": usemorelogger = true
-
-            echo "Got a \"", key, "\" option with value: \"", value, "\""
+            of  "m": usemorelogger = true
+            if (debug == true): 
+                  echo "Got a \"", key, "\" option with value: \"", value, "\""
             else:
               echo "Unknown option: ", key
         
