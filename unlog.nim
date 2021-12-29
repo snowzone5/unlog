@@ -14,6 +14,7 @@ var msg: string = ""
 var paramCount = paramCount()
 var extraArgs:  string = ""
 var usenimlogger: bool = false
+var maxnimlines: int = 1000
 var usemorelogger: bool = false
 
 
@@ -26,7 +27,12 @@ proc help = echo "help"
 
 proc nimlogger =
         var consoleLog = newConsoleLogger(fmtStr="[$date $time] - $levelname: ")          
+        var fileLog = newFileLogger(logfile, fmAppend,  fmtStr="[$date $time] - $levelname: ")
+        var rollingLog = newRollingFileLogger("rolling.log",  fmReadWrite, lvlAll,  fmtStr="[$date $time] - $levelname: ", maxnimlines)
+
         addHandler(consoleLog)
+        addHandler(fileLog)
+        addHandler(rollingLog)
 
 proc checkargs =
         var argCounter : int
@@ -56,7 +62,9 @@ proc checkargs =
               of "h", "help": help()
               of "v","version": version()
               of "c":  extraArgs.add(value & " ")
-              of  "n": usenimlogger = true
+              of  "n": 
+                       usenimlogger = true
+                       nimlogger()
               of  "m": usemorelogger = true
               of "s":
                 if (debug == true): 
@@ -78,7 +86,6 @@ proc checkargs =
         if  usenimlogger == false and usemorelogger == false and (extraArgs == ""):
             echo "You must use of one -n, -m or -c to define a logger"
 
-nimlogger()
 checkargs() 
 
 # TODO: use try/except for success var
