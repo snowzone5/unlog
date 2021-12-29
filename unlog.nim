@@ -35,7 +35,7 @@ proc checkargs =
           echo "Usage: unlog --log=\"<filename.log>\" --loglevel=[info | debug | warn | error | fatal] [ -ln | --linenumber ] [ -n | -c |  -m ] [  [-v | --version ] --msg=\"Log message.\" [ -c=extraArgs ...]"  
           quit(QuitFailure)
 
-        if debug == false:
+        if debug == true:
           for p in 1 .. paramCount:
                echo "param ", p, ": ", paramStr(p)
                echo ""
@@ -43,28 +43,30 @@ proc checkargs =
         for kind, key, value in getOpt():
           case kind
           of cmdArgument:
-            echo "Got arg ", argCounter, ": \"", key, "\""
-            argCounter.inc
+              echo "Got arg ", argCounter, ": \"", key, "\""
+              argCounter.inc
         
           of cmdLongOption, cmdShortOption:
-            case key
-            of  "log": logfile=value
-            of  "loglevel": loglevel=value
-            of "ln": lineNumber=value
-            of "linenumber": lineNumber=value
-            of  "msg": msg=value
-            of "h", "help": help()
-            of "v","version": version()
-            of "c":  extraArgs.add(value & " ")
-            of  "n": usenimlogger = true
-            of  "m": usemorelogger = true
-            if (debug == true): 
-                  echo "Got a \"", key, "\" option with value: \"", value, "\""
-            else:
-              echo "Unknown option: ", key
+              case key
+              of  "log": logfile=value
+              of  "loglevel": loglevel=value
+              of "ln": lineNumber=value
+              of "linenumber": lineNumber=value
+              of  "msg": msg=value
+              of "h", "help": help()
+              of "v","version": version()
+              of "c":  extraArgs.add(value & " ")
+              of  "n": usenimlogger = true
+              of  "m": usemorelogger = true
+              of "s":
+                if (debug == true): 
+                    echo "Got a \"", key, "\" option with value: \"", value, "\""
+
+              else:
+                echo "Unknown option: ", key
         
-          of cmdEnd:
-            discard
+          of cmdEnd: # matches: of cmdLongOption, cmdShortOption:
+              discard
 
         if msg == "":  
           loglevel = "WARN"
