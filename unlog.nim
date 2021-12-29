@@ -14,7 +14,6 @@ var msg: string = ""
 var paramCount = paramCount()
 var extraArgs:  string = ""
 var usenimlogger: bool = false
-var maxnimlines: int = 1000
 var usemorelogger: bool = false
 
 
@@ -28,11 +27,9 @@ proc help = echo "help"
 proc nimlogger =
         var consoleLog = newConsoleLogger(fmtStr="[$date $time] - $levelname: ")          
         var fileLog = newFileLogger(logfile, fmAppend,  fmtStr="[$date $time] - $levelname: ")
-        var rollingLog = newRollingFileLogger("rolling.log",  fmReadWrite, lvlAll,  fmtStr="[$date $time] - $levelname: ", maxnimlines)
 
         addHandler(consoleLog)
         addHandler(fileLog)
-        addHandler(rollingLog)
 
 proc checkargs =
         var argCounter : int
