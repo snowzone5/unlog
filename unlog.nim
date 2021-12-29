@@ -3,6 +3,7 @@ import os
 import parseopt
 import chronicles
 import std/logging
+import morelogging
 import strutils
 
 var ver: string = "Unlog v0.03" 
@@ -14,8 +15,9 @@ var msg: string = ""
 var paramCount = paramCount()
 var extraArgs:  string = ""
 var usenimlogger: bool = false
-var usemorelogger: bool = false
-
+var useJournaldLogging: bool = false
+var usesimplelogging: bool =  false
+var usemaxsquishlogging: bool = false
 
 proc version =  echo ver
 
@@ -38,7 +40,7 @@ proc checkargs =
           echo "Usage: unlog --log=\"<filename.log>\" --loglevel=[info | debug | warn | error | fatal] [ -ln | --linenumber ] [ -n | -c |  -m ] [  [-v | --version ] --msg=\"Log message.\" [ -c=extraArgs ...]"  
           quit(QuitFailure)
 
-        if debug == true:
+        if (debug == true):
           for p in 1 .. paramCount:
                echo "param ", p, ": ", paramStr(p)
                echo ""
@@ -56,16 +58,21 @@ proc checkargs =
               of "ln": lineNumber=value
               of "linenumber": lineNumber=value
               of  "msg": msg=value
-              of "h", "help": help()
-              of "v","version": version()
+              of "h": help()
+              of  "help": help()
+              of "v": version()
+              of "version": version()
               of "c":  extraArgs.add(value & " ")
               of  "n": 
-                       usenimlogger = true
-                       nimlogger()
-              of  "m": usemorelogger = true
-              of "s":
+                        usenimlogger = true
+                        nimlogger()
+              of  "j": 
+                        useJournaldLogging = true
+              of  "s":  usesimplelogging = true 
+              of  "m": usemaxsquishlogging = true
+              of "x":
                 if (debug == true): 
-                    echo "Got a \"", key, "\" option with value: \"", value, "\""
+                  echo "Got a \"", key, "\" option with value: \"", value, "\""
 
               else:
                 echo "Unknown option: ", key
@@ -80,7 +87,7 @@ proc checkargs =
           log(lvlWarn, "ln:",lineNumber, " - ", msg )
           quit(QuitFailure)
 
-        if  usenimlogger == false and usemorelogger == false and (extraArgs == ""):
+        if  usenimlogger == false and useJournaldLogging == false and (extraArgs == ""):
             echo "You must use of one -n, -m or -c to define a logger"
 
 checkargs() 
@@ -109,7 +116,13 @@ if (usenimlogger == true):
   of "error":  log(lvlError, "ln:",lineNumber, "- ", msg )
   of "fatal":  log(lvlFatal, "ln:",lineNumber, " - ", msg )
 
-# TODO: add nim-morelogging
+# TODO: add nim-morelogging (journald)
+
 # TODO: add max/squish logging :)
+#CRITICAL = "! "
+#        WARNING  = "? "
+#        DEBUG    = "+ "
+#        SESSION  = "$ "
+#        INFO     = "- "
 
  # TODO: add simple (for quick) -s option  (defaults to unlog.log, debug, no ln, and just msg)
