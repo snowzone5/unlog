@@ -1,4 +1,4 @@
-# nim c -d:chronicles_sinks=textblocks[stdout,file] -d:chronicles_indent=4 -d:chronicles_disable_thread_id unlog.nim
+# nim c -d:chronicles_sinks=textblocks[stdout,file] -d:chronicles_indent=4 -d:chronicles_disable_thread_id -d:systemd unlog.nim
 import os
 import parseopt
 import chronicles
@@ -16,15 +16,16 @@ var paramCount = paramCount()
 var extraArgs:  string = ""
 var usenimlogger: bool = false
 var useJournaldLogging: bool = false
-var usesimplelogging: bool =  false
+var usestdoutlogging: bool =  false
 var usemaxsquishlogging: bool = false
+let slog = newStdoutLogger(fmtStr="$time ")
+
 
 proc version =  echo ver
 
 proc help = echo "help"
 
-# TODO: add file logging to nimlogger
-# TODO: add file rotation option to nimlogger
+
 
 proc nimlogger =
         var consoleLog = newConsoleLogger(fmtStr="[$date $time] - $levelname: ")          
@@ -32,6 +33,7 @@ proc nimlogger =
 
         addHandler(consoleLog)
         addHandler(fileLog)
+
 
 proc checkargs =
         var argCounter : int
@@ -68,7 +70,8 @@ proc checkargs =
                         nimlogger()
               of  "j": 
                         useJournaldLogging = true
-              of  "s":  usesimplelogging = true 
+              of  "s":  
+                        usestdoutlogging = true 
               of  "m": usemaxsquishlogging = true
               of "x":
                 if (debug == true): 
@@ -87,8 +90,8 @@ proc checkargs =
           log(lvlWarn, "ln:",lineNumber, " - ", msg )
           quit(QuitFailure)
 
-        if  usenimlogger == false and useJournaldLogging == false and (extraArgs == ""):
-            echo "You must use of one -n, -m or -c to define a logger"
+        if  usestdoutlogging == false and usenimlogger == false and useJournaldLogging == false and (extraArgs == ""):
+            echo "You must use of one -s -n, -m or -c to define a logger"
 
 checkargs() 
 
@@ -115,6 +118,10 @@ if (usenimlogger == true):
   of "warn":  log(lvlWarn, "ln:",lineNumber, " - ", msg )
   of "error":  log(lvlError, "ln:",lineNumber, "- ", msg )
   of "fatal":  log(lvlFatal, "ln:",lineNumber, " - ", msg )
+
+if (usestdoutlogging == true):
+   case loglevel:
+   of "info": slog.info(msg)
 
 # TODO: add nim-morelogging (journald)
 
