@@ -9,8 +9,8 @@ import std/logging
 import morelogging
 import strutils
 
+var debug: bool = false
 var ver: string = "Unlog v0.05\n" 
-var debug: bool =  true
 var logfile: string = "unlog.log"
 var loglevel: string = "INFO"
 var lineNumber: string = "0"
@@ -22,9 +22,43 @@ var usemaxsquishlogging: bool = false
 var useJournaldLogging: bool = false
 let slog = newStdoutLogger(fmtStr="$time ")
 
-proc version =  echo ver
+proc version =  
+      echo ver
+      quit(QuitSuccess)
 
-proc help = echo "help"
+proc help =
+      echo "Usage: unlog [-h | --help] [ -v | --version ] --logstyle= [ sl | mul | nl | jctl | mxl ] --log=\"<filename.log>\" --loglevel=[ INFO | DEBUG | WARN | ERROR | FATAL ] [ --ln=# | --linenumber=# ] --msg=\"Log message.\" [-x=var1 [-x=var2 ... ]"
+      echo ""
+      echo "-h or --help"
+      echo "        Print this help."
+      echo ""
+      echo "-v or --version"
+      echo "        Print version."
+      echo ""
+      echo "--logstyle"
+      echo "        sl   - stdout, no log is written (--log is ignored), timestamp does not include date."
+      echo "        mul  - multi-line, cleaner output for readability."
+      echo "        nl   - nimlogger, uses nim's log handlers."
+      echo "        jctl - (not implemented yet) Journald logging "
+      echo "        mxl  - (not implemented yet) Maximus BBS/Squish tosser style logging. Clean, efficient logging"
+      echo "        jvl  - (not implemented yet) Java (Log4J) style logging. Note: Log4J is not actually used."  
+      echo ""
+      echo "--log"
+      echo "        Log path/filename. If you choose any logging style other than sl, and omit this, the default log will be called \"unlog.log\" "
+      echo ""
+      echo "--loglevel"
+      echo "        INFO, DEBUG, WARN, ERROR, FATAL. If omitted, default is INFO."
+      echo ""
+      echo "--ln or --linenumber"
+      echo "        Line number of caller. Internally this is actually a string. This may change in the future."
+      echo ""
+      echo "--msg"
+      echo "        The message you want to log"
+      echo ""
+      echo "-x"
+      echo "        extra arguments, can be any alpha numeric, and as many as you want to add." 
+      echo ""
+      quit(QuitFailure)
 
 proc multiline =
       # TODO: use try/except for success var
@@ -32,10 +66,10 @@ proc multiline =
         var success = defaultChroniclesStream.output.open(logfile, fmAppend)
 
       case loglevel
-      of "INFO":  info  "", lineNumber, msg, extraArgs
-      of "NOTICE":  notice  "", lineNumber, msg, extraArgs
+      of "INFO":   info  "", lineNumber, msg, extraArgs
+      of "NOTICE": notice  "", lineNumber, msg, extraArgs
       of "DEBUG":  debug  "", lineNumber, msg, extraArgs
-      of "WARN":  warn  "", lineNumber, msg, extraArgs
+      of "WARN":   warn  "", lineNumber, msg, extraArgs
       of "ERROR":  error  "", lineNumber, msg, extraArgs
       of "FATAL":  fatal  "", lineNumber, msg, extraArgs
 
@@ -67,8 +101,7 @@ proc checkargs =
         var extraCounter: int = 0
 
         if paramCount == 0:
-          echo "Usage: unlog --log=\"<filename.log>\" --loglevel=[info | debug | warn | error | fatal] [ -ln | --linenumber ] [ -n | -c |  -m ] [  [-v | --version ] --msg=\"Log message.\" [ -c=extraArgs ...]"  
-          quit(QuitFailure)
+            help()
 
         for p in 1 .. paramCount:
             #% echo "\nparam ", p, ": ", paramStr(p)
@@ -95,7 +128,6 @@ proc checkargs =
                           if extraCounter < ((paramCount-1)-extraCounter):
                               extraArgs.add(value & " ")
                               extraCounter.inc
-
                     of "mul": logStyle = "multiLine"
                     of "nl": logStyle = "nimlogger"
                     of "jl": 
