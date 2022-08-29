@@ -11,7 +11,7 @@ import strutils
 #import std/distros
 
 var debug: bool = false
-var ver: string = "Unlog v0.05\n" 
+var ver: string = "Unlog v0.06\n" 
 var logfile: string = "unlog.log"
 var loglevel: string = "INFO"
 var caller: string = "main"
@@ -26,6 +26,7 @@ let slog = newStdoutLogger(fmtStr="$time ")
 
 proc version =  
       echo ver
+      # TODO: issue12, add os detection
       quit(QuitSuccess)
 
 proc help =
@@ -67,7 +68,7 @@ proc help =
 
 proc multiline =
       # TODO: use try/except for success var
-      if extraArgs != "":  # -c is used one or more times for Chronicles
+      if extraArgs != "":  # -x is used one or more times for Chronicles
         var success = defaultChroniclesStream.output.open(logfile, fmAppend)
 
       case loglevel
@@ -102,7 +103,7 @@ proc usenimlogger =
 
 proc checkargs =
         var argCounter : int
-        var extraCounter: int = 0
+        var extraCounter: int = 2
 
         if paramCount == 0:
             help()
@@ -117,7 +118,6 @@ proc checkargs =
                 of cmdArgument:
                     echo "Got arg ", argCounter, ": \"", key, "\""
                     argCounter.inc
-              
                 of cmdLongOption, cmdShortOption:
                     case key
                     of "d": debug=true
@@ -126,33 +126,32 @@ proc checkargs =
                     of "ln": lineNumber=value
                     of "linenumber": lineNumber=value
                     of "c": 
-                          if value != "":
-                              caller=value
+                            if value != "":
+                                caller=value
                     of "caller": 
-                               if value != "":
-                                   caller=value
+                                if value != "":
+                                    caller=value
                     of "msg": msg=value
                     of "h": help()
                     of "help": help()
                     of "v": version()
                     of "version": version()
                     of "x":
-                          if extraCounter < ((paramCount-2)-extraCounter):
-                              extraArgs.add(value & " ")
-                              extraCounter.inc
+                            if extraCounter < (paramCount-extraCounter):
+                                extraArgs.add(value & " ")
+                                extraCounter.inc
                     of "mul": logStyle = "multiLine"
                     of "nl": logStyle = "nimlogger"
-                    of "jl": 
-                              useJournaldLogging = true
-                    of "sl":  logStyle = "stdout" 
+                    of "jl": useJournaldLogging = true
+                    of "sl": logStyle = "stdout" 
                     of "mxl": usemaxsquishlogging = true
                     of "z":
-                      if (debug == true): 
-                        echo "Got a \"", key, "\" option with value: \"", value, "\""
+                            if (debug == true): 
+                                echo "Got a \"", key, "\" option with value: \"", value, "\""
             
                     else:
-                      echo "Unknown option: ", key
-                      help()
+                        echo "Unknown option: ", key
+                        help()
             
                 of cmdEnd: # matches: of cmdLongOption, cmdShortOption:
                     discard
