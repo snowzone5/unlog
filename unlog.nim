@@ -1,6 +1,8 @@
 #% nim c -d:chronicles_sinks=textblocks[stdout,file,syslog] -d:chronicles_indent=4 -d:chronicles_disable_thread_id  unlog.nim
 #% remove syslog for color in log files (less -R to view)
 #% nim c -d:chronicles_sinks=textblocks[stdout,file] -d:chronicles_indent=4 -d:chronicles_disable_thread_id  unlog.nim
+#% windows crosscompile: sudo apt mingw-w64
+#% nim c -d:mingw -d:chronicles_sinks=textblocks[stdout,file] -d:chronicles_indent=4 -d:chronicles_disable_thread_id  unlog.nim
 
 import os
 import parseopt
@@ -10,6 +12,7 @@ import morelogging
 import strutils
 #import std/distros
 
+#var debug: bool = true
 var debug: bool = false
 var ver: string = "Unlog v0.06\n" 
 var logfile: string = "unlog.log"
@@ -23,6 +26,7 @@ var logStyle = "multiLine"
 var usemaxsquishlogging: bool = false
 var useJournaldLogging: bool = false
 let slog = newStdoutLogger(fmtStr="$time ")
+let qlog = newStdoutLogger(fmtStr="$time ")
 
 proc version =  
       echo ver
@@ -30,7 +34,7 @@ proc version =
       quit(QuitSuccess)
 
 proc help =
-      echo "Usage: unlog [-h | --help] [ -v | --version ] --logstyle= [ sl | mul | nl | jctl | mxl ] --log=\"<filename.log>\" --loglevel=[ INFO | DEBUG | WARN | ERROR | FATAL ] [ -c= | --caller=\"proc\" ] [ --ln=# | --linenumber=# ] --msg=\"Log message.\" [-x=var1 [-x=var2 ... ]"
+      echo "Usage: unlog [-h | --help] [ -v | --version ] --[ ql=\"msg\" | sl | ml | nl | jctl | mxl ] --log=\"<filename.log>\" --loglevel=[ INFO | DEBUG | WARN | ERROR | FATAL ] [ -c= | --caller=\"proc\" ] [ -l=# | --linenumber=# ] --msg=\"Log message.\" [-x=var1 [-x=var2 ... ]"
       echo ""
       echo "-h or --help"
       echo "        Print this help."
@@ -38,13 +42,20 @@ proc help =
       echo "-v or --version"
       echo "        Print version."
       echo ""
-      echo "--logstyle"
-      echo "        sl   - stdout, no log is written (--log is ignored), timestamp does not include date."
-      echo "        mul  - multi-line, cleaner output for readability."
+      echo "--ql"
+      echo "        quick logging, all other options are ignored, timestamp does not include date. Not meant for production logging."
+      echo "--sl"
+      echo "        stdout, no log is written (--log is ignored), timestamp does not include date."
+      echo "--ml"
+      echo "        ml  - multi-line, cleaner output for readability."
+      echo "--nl"
       echo "        nl   - nimlogger, uses nim's log handlers."
-      echo "        jctl - (not implemented yet) Journald logging "
-      echo "        mxl  - (not implemented yet) Maximus BBS/Squish tosser style logging. Clean, efficient logging"
-      echo "        jvl  - (not implemented yet) Java (Log4J) style logging. Note: Log4J is not actually used."  
+      echo "--jl"
+      echo "        jl - (not implemented yet) Journald logging."
+      echo "--xl"
+      echo "        xl  - (not implemented yet) Maximus BBS/Squish tosser style logging. Clean, efficient logging"
+      echo " --4l"
+      echo "        4l  - (not implemented yet) Java (Log4J) style logging. Note: Log4J is not actually used."  
       echo ""
       echo "--log"
       echo "        Log path/filename. If you choose any logging style other than sl, and omit this, the default log will be called \"unlog.log\" "
@@ -72,7 +83,11 @@ proc multiline =
         var success = defaultChroniclesStream.output.open(logfile, fmAppend)
 
       case loglevel
-      of "INFO":   info  "", caller, lineNumber, msg, extraArgs
+      of "INFO":   
+               if extraArgs == "":
+                  info  "", caller, lineNumber, msg
+               else:
+                  info  "", caller, lineNumber, msg, extraArgs
       of "NOTICE": notice  "", caller, lineNumber, msg, extraArgs
       of "DEBUG":  debug  "", caller, lineNumber, msg, extraArgs
       of "WARN":   warn  "", caller, lineNumber, msg, extraArgs
@@ -94,6 +109,13 @@ proc stdoutlogging =
 
       quit(QuitSuccess)
 
+proc quicklog =
+      loglevel="DEBUG"
+      qlog.debug(loglevel, ": ", msg)
+      echo ""
+
+      quit(QuitSuccess)
+
 proc usenimlogger =
         var consoleLog = newConsoleLogger(fmtStr="[$date $time] - $levelname:")          
         var fileLog = newFileLogger(logfile, fmAppend,  fmtStr="[$date $time] - $levelname:")
@@ -103,7 +125,7 @@ proc usenimlogger =
 
 proc checkargs =
         var argCounter : int
-        var extraCounter: int = 2
+        var extraCounter: int = 0 
 
         if paramCount == 0:
             help()
@@ -123,7 +145,7 @@ proc checkargs =
                     of "d": debug=true
                     of "log": logfile=value
                     of "loglevel": loglevel=value
-                    of "ln": lineNumber=value
+                    of "l": lineNumber=value
                     of "linenumber": lineNumber=value
                     of "c": 
                             if value != "":
@@ -137,13 +159,16 @@ proc checkargs =
                     of "v": version()
                     of "version": version()
                     of "x":
-                            if extraCounter < (paramCount-extraCounter):
+                            if extraCounter < ((paramCount)-extraCounter):
                                 extraArgs.add(value & " ")
                                 extraCounter.inc
-                    of "mul": logStyle = "multiLine"
+                    of "ml": logStyle = "multiLine"
                     of "nl": logStyle = "nimlogger"
                     of "jl": useJournaldLogging = true
                     of "sl": logStyle = "stdout" 
+                    of "ql": 
+                             logStyle = "quickLog" 
+                             msg=value
                     of "mxl": usemaxsquishlogging = true
                     of "z":
                             if (debug == true): 
@@ -161,6 +186,7 @@ checkargs()
 case logStyle:
 of "multiLine": multiline()
 of "stdout": stdoutlogging()
+of "quickLog": quicklog()
 of "nimlogger": 
               usenimlogger()
               case loglevel:
